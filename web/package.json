@@ -14,7 +14,7 @@
     "icons": "python3 tools/make_icons.py"
   },
   "dependencies": {
-    "esptool-js": "0.7.1",
+    "esptool-js": "0.7.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "spark-md5": "3.0.2"

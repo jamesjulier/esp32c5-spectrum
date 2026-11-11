@@ -11,8 +11,11 @@ import { join } from "node:path";
 const root = new URL("..", import.meta.url).pathname;
 const SW_MODULES = ["workbox-core", "workbox-precaching", "workbox-routing", "workbox-strategies", "workbox-window"];
 
+// npm may mask parts of absolute paths it prints, so keep only the part from the
+// first node_modules/ and resolve it against this project.
 const tree = execFileSync("npm", ["ls", "--omit=dev", "--all", "--parseable"], { cwd: root, encoding: "utf8" })
-  .split("\n").filter((p) => p.includes("node_modules"));
+  .split("\n").filter((p) => p.includes("node_modules"))
+  .map((p) => join(root, p.slice(p.indexOf("node_modules"))));
 const dirs = [...new Set([...tree, ...SW_MODULES.map((m) => join(root, "node_modules", m))])];
 
 const blocks = dirs.map((dir) => {

@@ -84,10 +84,17 @@ export function Analyser({ onOpenFirmware }: { onOpenFirmware: () => void }) {
   // Redraw when the view changes shape.
   useEffect(() => { draw(); }, [mode, focus, draw]);
 
-  // ?replay=<url>
+  // ?replay=<url>, from this site only: a link must not be able to show another
+  // site's made-up spectrum as if it were a measurement.
   useEffect(() => {
-    const url = new URLSearchParams(window.location.search).get("replay");
-    if (!url) return;
+    const param = new URLSearchParams(window.location.search).get("replay");
+    if (!param) return;
+    const url = new URL(param, window.location.href);
+    if (url.origin !== window.location.origin) {
+      setLink({ kind: "error" });
+      setError("Replay files must come from this site.");
+      return;
+    }
     fetch(url).then((r) => r.json()).then((d) => { an.setSource(new ReplaySource(d)); setLink({ kind: "replay" }); })
       .catch((e) => { setLink({ kind: "error" }); setError(`Replay failed: ${e instanceof Error ? e.message : e}`); });
   }, [an]);
@@ -174,7 +181,7 @@ export function Analyser({ onOpenFirmware }: { onOpenFirmware: () => void }) {
           )}
       </div>
 
-      {error && <Callout kind="error" title="The board stopped.">{error}</Callout>}
+      {error && <Callout kind="error" title={error.startsWith("Replay") ? "Replay not loaded." : "The board stopped."}>{error}</Callout>}
 
       <div className="row">
         <Field label="Band">

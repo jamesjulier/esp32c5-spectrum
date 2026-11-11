@@ -23,15 +23,17 @@ samples from the ESP32's own receiver through an undocumented debug path. This r
 a screen, a button and touch on top of it, as a patch plus one ESP-IDF component.
 
 > [!WARNING]
-> **Receive only.** Nothing here transmits. Newer ESP-SDR forks can transmit, which is not
+> **Receive only.** Nothing is transmitted after start-up (the radio chip may emit a brief
+> internal calibration tone as it powers up). Newer ESP-SDR forks can transmit, which is not
 > licensed outside the Wi-Fi rules. Do not add it.
 
 ## Licence
 
-Copyright © 2026 James Julier. **GPL-3.0** (see `LICENSE`), because ESP-SDR is GPL-3.0. The fonts in the firmware are SIL OFL 1.1
+Copyright © 2026 James Julier. **GPL-3.0** (see `LICENSE`), because ESP-SDR is GPL-3.0. Third-party parts and their licences are in
+`THIRD-PARTY-NOTICES.md`. The fonts in the firmware are SIL OFL 1.1
 (see `FONTS-LICENCE.md`).
 
-ESP-SDR itself is not in this repository. `firmware/build.sh` fetches it at a pinned commit and
+ESP-SDR itself is not in this repository. `firmware/build.sh` fetches it at a pinned commit (the full 40-character id) and
 applies `firmware/patches/0001-local-display.patch`. Anyone given a board running this firmware is
 entitled to its source: this repository plus ESP-SDR at that commit.
 
@@ -194,7 +196,8 @@ What `build.sh` needs:
 - **cmake and ninja** on `PATH`. If an ESP-IDF v5 install left copies under
   `~/.espressif/tools/`, `build.sh` uses those.
 
-`build.sh` fetches ESP-SDR at commit `f86da81` into `firmware/esp-sdr/`, applies the patch, and
+`build.sh` fetches ESP-SDR at commit `f86da818…` into `firmware/esp-sdr/`, resets it to exactly that
+commit (any local edits there are discarded), applies the patch, and
 builds with `ESP_SDR_LOCAL_DISPLAY=ON`. Flashing replaces whatever the board was running.
 
 ### Two apps on one board
@@ -231,6 +234,12 @@ The T-Dongle's pins come from LilyGO's `pin_config.h`
   anything grows into it. Halving the FFT buffers frees about 13 KB. The screen's SPI and DMA
   interrupt code is also kept out of IRAM (`sdkconfig.waveshare`).
 - **`ID?`**, when built with `-DBOARD_NAME=…` (`build.sh` sets it for every board).
+- **No `GPIO` writes while a host has the radio.** The screen, touch, backlight and BOOT button use
+  the pins ESP-SDR's `GPIO` command frees up, so the screen builds answer `ERR gpio_reserved_by_display`.
+  `GPIO?` still reads them. The screen builds also turn off ESP-SDR's optional UART port, so USB is the
+  only command port.
+
+To build from the mirror instead of upstream: `ESP_SDR_REPO=https://github.com/jamesjulier/esp-sdr bash build.sh`.
 
 ## Panel lessons (Waveshare 1.47")
 
@@ -252,6 +261,14 @@ The T-Dongle's pins come from LilyGO's `pin_config.h`
 
 Written by James Julier.
 
+- **[ESP-SDR](https://github.com/ESPARGOS/esp-sdr) by Florian Euchner (ESPARGOS)**, which does all the
+  radio work. This project is a modified version of it: our changes are the patch in `firmware/patches/`
+  (marked "Modified by James Julier, 2026" in each file it touches) and the component in
+  `firmware/components/`. A mirror of the exact version used is kept at
+  [jamesjulier/esp-sdr](https://github.com/jamesjulier/esp-sdr/tree/esp32c5-spectrum-base).
+- **Espressif**: ESP-IDF, esp-dsp and esptool-js.
+- **LovyanGFX**, **LilyGO** and **Waveshare**, whose published panel settings, pin maps and touch protocol
+  the screen code uses.
+- **[Inter](https://github.com/rsms/inter)** and **[Manrope](https://github.com/sharanda/manrope)** fonts.
 
-- [ESP-SDR](https://github.com/ESPARGOS/esp-sdr) by ESPARGOS, which does all the radio work.
-- [Inter](https://github.com/rsms/inter) and [Manrope](https://github.com/sharanda/manrope) fonts.
+Every third-party component and its licence: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

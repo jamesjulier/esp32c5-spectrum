@@ -8,3 +8,4 @@ web/node_modules/
 web/dist/
 .DS_Store
 web/public/replay*.json
+web/public/third-party-notices.txt

@@ -251,13 +251,19 @@ void eng_lcd_init(void)
 
 static eng_lcd_send_fn s_snap;
 
+// A send that fails (the host stopped reading) ends the snapshot there. Each
+// failed send waits out the serial driver's timeout, about 3 s, so carrying on
+// would freeze the screen for the rest of the frame (hours on the 2.8").
 void eng_lcd_snap(eng_lcd_send_fn send, bool on)
 {
     char head[40];
-    int n = on ? snprintf(head, sizeof head, "\nSNAP BEGIN %d %d\n", LCD_W, LCD_H)
-               : snprintf(head, sizeof head, "SNAP END\n");
-    send(head, n);
-    s_snap = on ? send : NULL;
+    if (on) {
+        int n = snprintf(head, sizeof head, "\nSNAP BEGIN %d %d\n", LCD_W, LCD_H);
+        s_snap = send(head, n) ? send : NULL;
+    } else {
+        if (s_snap) s_snap(head, snprintf(head, sizeof head, "SNAP END\n"));
+        s_snap = NULL;
+    }
 }
 
 // One row as hex, sent in pieces small enough for the USB driver's buffer.
@@ -265,16 +271,19 @@ static void snap_rows(int w, int h, const uint16_t *px)
 {
     static const char hex[] = "0123456789abcdef";
     char out[129];
-    for (int r = 0; r < h; r++) {
+    for (int r = 0; r < h && s_snap; r++) {
         int n = 0;
         for (int i = 0; i < w; i++) {
             uint16_t v = px[r * w + i];
             out[n++] = hex[v >> 12]; out[n++] = hex[(v >> 8) & 15];
             out[n++] = hex[(v >> 4) & 15]; out[n++] = hex[v & 15];
-            if (n == 128) { s_snap(out, n); n = 0; }
+            if (n == 128) {
+                if (!s_snap(out, n)) { s_snap = NULL; return; }
+                n = 0;
+            }
         }
         out[n++] = '\n';
-        s_snap(out, n);
+        if (!s_snap(out, n)) { s_snap = NULL; return; }
     }
 }
 

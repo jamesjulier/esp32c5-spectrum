@@ -14,6 +14,12 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 OUT="${OUT:-$HERE/dist}"
+# The manifest names this repository's commit as the source of the images, so
+# that commit must hold exactly what is built: no uncommitted firmware changes.
+if [ -n "$(git -C "$HERE" status --porcelain -- .)" ]; then
+    echo "firmware/ has uncommitted changes: commit them first" >&2
+    git -C "$HERE" status --short -- . >&2; exit 1
+fi
 mkdir -p "$OUT"
 bash "$HERE/build.sh"
 BOARD=tdongle bash "$HERE/build.sh"
@@ -29,8 +35,8 @@ merge "$HERE/build"         waveshare-c5-lcd-spectrum.bin
 merge "$HERE/build-tdongle" tdongle-c5-spectrum.bin
 merge "$HERE/build-stock"   xiao-c5-esp-sdr.bin
 
-SDR_COMMIT="$(git -C "$HERE/esp-sdr" rev-parse --short HEAD)"
-OUR_COMMIT="$(git -C "$HERE" log -1 --format=%h -- patches components 2>/dev/null || echo unknown)"
+SDR_COMMIT="$(git -C "$HERE/esp-sdr" rev-parse HEAD)"
+OUR_COMMIT="$(git -C "$HERE" rev-parse HEAD)"
 python3 - "$OUT" "$SDR_COMMIT" "$OUR_COMMIT" <<'PY'
 import hashlib, json, os, sys, datetime
 out, sdr, ours = sys.argv[1:4]
@@ -40,8 +46,10 @@ def entry(name, board, label, flash, kind):
             "flash_size": flash, "kind": kind, "bytes": len(b), "sha256": hashlib.sha256(b).hexdigest()}
 m = {
   "built": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
-  "esp_sdr": {"repo": "https://github.com/ESPARGOS/esp-sdr", "commit": sdr, "licence": "GPL-3.0"},
-  "patch": {"path": "firmware/patches/0001-local-display.patch", "commit": ours},
+  "esp_sdr": {"repo": "https://github.com/ESPARGOS/esp-sdr", "mirror": "https://github.com/jamesjulier/esp-sdr",
+              "commit": sdr, "licence": "GPL-3.0", "author": "Florian Euchner (ESPARGOS)"},
+  "patch": {"repo": "https://github.com/jamesjulier/esp32c5-spectrum", "path": "firmware/patches/0001-local-display.patch",
+            "commit": ours, "licence": "GPL-3.0"},
   "images": [
     entry("waveshare-c5-lcd-spectrum.bin", "waveshare-c5-lcd-1.47", "Waveshare ESP32-C5-LCD-1.47", "4MB", "spectrum-on-screen"),
     entry("tdongle-c5-spectrum.bin", "lilygo-t-dongle-c5", "LilyGO T-Dongle-C5", "16MB", "spectrum-on-screen"),

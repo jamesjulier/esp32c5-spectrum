@@ -10,3 +10,7 @@ CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 # CONFIG_SPI_MASTER_ISR_IN_IRAM is not set
 # CONFIG_GDMA_CTRL_FUNC_IN_IRAM is not set
 # CONFIG_GDMA_ISR_HANDLER_IN_IRAM is not set
+
+# One command port: USB. ESP-SDR's optional UART0 port would be a second host
+# that the screen's takeover mode cannot keep apart from the first.
+# CONFIG_ESP_SDR_UART_ENABLED is not set

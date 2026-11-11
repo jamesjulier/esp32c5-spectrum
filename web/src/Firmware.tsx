@@ -13,7 +13,13 @@ const DIR = "./firmware";
 const REPO = "https://github.com/jamesjulier/esp32c5-spectrum";
 
 interface Image { board: string; label: string; file: string; chip: string; offset: string; flash_size: string; kind: string; bytes: number; sha256: string }
-interface Manifest { built: string; esp_sdr: { repo: string; commit: string; licence: string }; patch: { path: string; commit: string }; images: Image[] }
+interface Manifest {
+  built: string;
+  esp_sdr: { repo: string; mirror?: string; commit: string; licence: string };
+  patch: { path: string; commit: string };
+  images: Image[];
+}
+const short = (sha: string) => sha.slice(0, 7);
 
 const WHAT: Record<string, string> = {
   "spectrum-on-screen": "Spectrum on its own screen. This page can also take it over from the Analyser tab.",
@@ -134,8 +140,10 @@ export function Firmware({ onOpenAnalyser }: { onOpenAnalyser: () => void }) {
       </section>
 
       <p className="muted" style={{ fontSize: 12 }}>
-        Built from <a href={`${manifest.esp_sdr.repo}/tree/${manifest.esp_sdr.commit}`}>ESP-SDR {manifest.esp_sdr.commit}</a> ({manifest.esp_sdr.licence}),
-        with the patch <a href={`${REPO}/blob/${manifest.patch.commit}/${manifest.patch.path}`} className="mono">{manifest.patch.path}</a> at {manifest.patch.commit}. Images built {manifest.built}.
+        Built from <a href={`${manifest.esp_sdr.repo}/tree/${manifest.esp_sdr.commit}`}>ESP-SDR {short(manifest.esp_sdr.commit)}</a> by
+        Florian Euchner ({manifest.esp_sdr.licence}{manifest.esp_sdr.mirror && <>, <a href={`${manifest.esp_sdr.mirror}/tree/${manifest.esp_sdr.commit}`}>mirror</a></>}),
+        modified by James Julier with <a href={`${REPO}/blob/${manifest.patch.commit}/${manifest.patch.path}`} className="mono">{manifest.patch.path}</a> at {short(manifest.patch.commit)}.
+        Images built {manifest.built}. <a href={`${REPO}/blob/main/THIRD-PARTY-NOTICES.md`}>Third-party licences</a>.
       </p>
     </div>
   );

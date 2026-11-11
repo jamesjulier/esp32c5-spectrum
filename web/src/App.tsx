@@ -47,9 +47,9 @@ export function App() {
 
       <footer className="foot">
         <span>By James Julier</span>
-        <span>Built on <a href="https://github.com/ESPARGOS/esp-sdr">ESP-SDR</a> by ESPARGOS</span>
-        <span><a href="https://github.com/jamesjulier/esp32c5-spectrum">Source code</a> · GPL-3.0</span>
-        <span>Receive only: nothing here transmits.</span>
+        <span>Built on <a href="https://github.com/ESPARGOS/esp-sdr">ESP-SDR</a> by Florian Euchner (ESPARGOS)</span>
+        <span><a href="https://github.com/jamesjulier/esp32c5-spectrum">Source code</a> · GPL-3.0 · <a href="./third-party-notices.txt">Third-party licences</a></span>
+        <span>Receive only: nothing is transmitted after start-up.</span>
       </footer>
     </div>
   );

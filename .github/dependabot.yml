@@ -1,0 +1,15 @@
+# Weekly update PRs for the pinned GitHub Actions and the web viewer's npm
+# packages. Each PR runs the workflow's tests before anything is merged.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+    groups:
+      web:
+        patterns: ["*"]

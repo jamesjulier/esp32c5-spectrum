@@ -1,12 +1,13 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 1b19d83..073ae28 100644
+index 1b19d83..73a1bb4 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -18,4 +18,12 @@ endif()
+@@ -18,4 +18,13 @@ endif()
  include($ENV{IDF_PATH}/tools/cmake/project.cmake)
  idf_build_set_property(MINIMAL_BUILD ON)
  idf_build_set_property(ESP_SDR_STREAMING "${ESP_SDR_STREAMING}")
-+# Local display build (esp32c5-spectrum, firmware/). A
++# Modified by James Julier, 2026 (github.com/jamesjulier/esp32c5-spectrum):
++# local display build. A
 +# build property, like ESP_SDR_STREAMING, so main/ sees it in the early pass
 +# where component requirements are worked out.
 +option(ESP_SDR_LOCAL_DISPLAY "Draw the spectrum on an attached screen, no host" OFF)
@@ -16,14 +17,15 @@ index 1b19d83..073ae28 100644
 +idf_build_set_property(BOARD_NAME "${BOARD_NAME}")
  project(esp_sdr)
 diff --git a/main/CMakeLists.txt b/main/CMakeLists.txt
-index e00b353..4a610db 100644
+index e00b353..e48c9f3 100644
 --- a/main/CMakeLists.txt
 +++ b/main/CMakeLists.txt
-@@ -62,6 +62,12 @@ if(IDF_TARGET STREQUAL "esp32c61" OR IDF_TARGET STREQUAL "esp32s31")
+@@ -62,6 +62,13 @@ if(IDF_TARGET STREQUAL "esp32c61" OR IDF_TARGET STREQUAL "esp32s31")
      list(APPEND sources "common/burst_gain_table.c")
  endif()
  
-+# Local display build (esp32c5-spectrum, firmware/).
++# Modified by James Julier, 2026 (github.com/jamesjulier/esp32c5-spectrum):
++# local display build.
 +idf_build_get_property(local_display ESP_SDR_LOCAL_DISPLAY)
 +if(local_display)
 +    list(APPEND dependencies eng_spectrum_ui)
@@ -32,7 +34,7 @@ index e00b353..4a610db 100644
  idf_component_register(SRCS "${receiver}" ${sources}
      LDFRAGMENTS ${fragments}
      PRIV_INCLUDE_DIRS "common" ${target_includes} "diagnostics"
-@@ -88,6 +94,13 @@ endif()
+@@ -88,6 +95,13 @@ endif()
  if(IDF_TARGET STREQUAL "esp32c2")
      target_link_options(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=soc_get_available_memory_regions")
  endif()
@@ -47,7 +49,7 @@ index e00b353..4a610db 100644
      if(${probe})
          target_compile_definitions(${COMPONENT_LIB} PRIVATE "${probe}=1")
 diff --git a/main/common/spectrum.c b/main/common/spectrum.c
-index 6abfbf9..1d37603 100644
+index 6abfbf9..1e422d4 100644
 --- a/main/common/spectrum.c
 +++ b/main/common/spectrum.c
 @@ -18,7 +18,14 @@
@@ -65,12 +67,13 @@ index 6abfbf9..1d37603 100644
  #define HEADER_BYTES 28u
  #if CONFIG_IDF_TARGET_ESP32C2
  /* Quiescent during RF capture; keep heap/stacks in the other SRAM banks. */
-@@ -281,3 +288,51 @@ bool spectrum_command(const char *line, unsigned frequency_mhz, spectrum_acquire
+@@ -281,3 +288,52 @@ bool spectrum_command(const char *line, unsigned frequency_mhz, spectrum_acquire
      send_text(text);
      return true;
  }
 +
-+/* Local display build (firmware/ in the esp32c5-spectrum
++/* Modified by James Julier, 2026 (github.com/jamesjulier/esp32c5-spectrum).
++ * Local display build (firmware/ in the esp32c5-spectrum
 + * repository). The same capture, window, FFT, DC removal and power path as SPEC,
 + * returning MEAN-power codes (SPEC's detector 0) to the caller instead of
 + * sending frames. Mean, as a bench analyser's average detector: a busy channel
@@ -118,14 +121,15 @@ index 6abfbf9..1d37603 100644
 +    return true;
 +}
 diff --git a/main/common/spectrum.h b/main/common/spectrum.h
-index c4233e1..d84a144 100644
+index c4233e1..a737816 100644
 --- a/main/common/spectrum.h
 +++ b/main/common/spectrum.h
-@@ -6,6 +6,11 @@
+@@ -6,6 +6,12 @@
  typedef bool (*spectrum_acquire_fn)(unsigned n, unsigned rate, const uint32_t **words, unsigned *elapsed_us);
  bool spectrum_command(const char *line, unsigned frequency_mhz, spectrum_acquire_fn acquire);
  
-+/* Local display: one mean-power spectrum of `ffts` snapshots,
++/* Modified by James Julier, 2026 (github.com/jamesjulier/esp32c5-spectrum).
++ * Local display: one mean-power spectrum of `ffts` snapshots,
 + * written to `codes` (n bytes, natural FFT order, same power codes as SPC1).
 + * DC removal is on. No serial output. */
 +bool spectrum_snapshot(unsigned n, unsigned rate, unsigned ffts, spectrum_acquire_fn acquire, uint8_t *codes);
@@ -134,7 +138,7 @@ index c4233e1..d84a144 100644
  
  /* Snapshot and continuous backends run exclusively. Reuse their large buffers
 diff --git a/main/families/c5_c6_c61/receiver.c b/main/families/c5_c6_c61/receiver.c
-index 7d380c3..2dec359 100644
+index 7d380c3..02747c8 100644
 --- a/main/families/c5_c6_c61/receiver.c
 +++ b/main/families/c5_c6_c61/receiver.c
 @@ -7,6 +7,7 @@
@@ -145,12 +149,13 @@ index 7d380c3..2dec359 100644
  #include "esp_phy_cert_test.h"
  #include "esp_rom_crc.h"
  #include "esp_rom_sys.h"
-@@ -273,6 +274,68 @@ static bool ring_test(const char *line) {
+@@ -273,6 +274,73 @@ static bool ring_test(const char *line) {
  
  static void handle_command(char *line);
  
 +#ifdef ESP_SDR_LOCAL_DISPLAY
-+/* Local display: the board drives its own receiver and draws
++/* Modified by James Julier, 2026 (github.com/jamesjulier/esp32c5-spectrum).
++ * Local display: the board drives its own receiver and draws
 + * the spectrum on its screen, with no host. See eng_spectrum_ui.h. */
 +#include "eng_spectrum_ui.h"
 +#include "rx_bandwidth.h"
@@ -197,6 +202,10 @@ index 7d380c3..2dec359 100644
 +    for (;;) {
 +        if (local_status > 0) {
 +            if (!strcmp(local_line, "RELEASE")) reply("OK\n");
++            /* The screen, touch, backlight and BOOT button sit on the GPIOs that
++             * ESP-SDR's GPIO command frees up, and a host taking a pin would leave
++             * the screen dead after it lets go. Reading them (GPIO?) is fine. */
++            else if (!strncmp(local_line, "GPIO ", 5)) reply("ERR gpio_reserved_by_display\n");
 +            else handle_command(local_line);
 +            last = esp_timer_get_time();
 +        } else if (local_status < 0) {
@@ -214,7 +223,7 @@ index 7d380c3..2dec359 100644
  void app_main(void) {
  
      esp_log_level_set("*", ESP_LOG_NONE);
-@@ -300,6 +363,11 @@ void app_main(void) {
+@@ -300,6 +368,11 @@ void app_main(void) {
      esp_log_level_set("*", ESP_LOG_NONE);
      (void)usb_serial_jtag_wait_tx_done(pdMS_TO_TICKS(100));
      ESP_ERROR_CHECK(usb_serial_jtag_driver_uninstall());
@@ -226,7 +235,7 @@ index 7d380c3..2dec359 100644
      burst_serial_init();
      burst_serial_serve(handle_command);
  }
-@@ -308,6 +376,19 @@ void app_main(void) {
+@@ -308,6 +381,19 @@ void app_main(void) {
  #include "burst_commands.h"
  
  static void handle_command(char *line) {

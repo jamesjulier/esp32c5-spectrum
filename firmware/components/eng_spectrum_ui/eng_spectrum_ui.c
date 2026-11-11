@@ -822,7 +822,7 @@ bool eng_spectrum_local_command(const char *line, eng_send_fn send)
     if (!strcmp(line, "SNAP"))  { s_send = send; s_snap_req = true; return true; }
     if (!strcmp(line, "DTAP"))  { post(EV_DTAP, 0, 0); return true; }
     if (!strcmp(line, "HOLD"))  { post(EV_HOLD, 0, 0); return true; }
-    if (sscanf(line, "SWIPE %c", &d) == 1) { post(d == 'L' ? EV_SWIPE_L : EV_SWIPE_R, 0, 0); return true; }
+    if (sscanf(line, "SWIPE %c", &d) == 1 && (d == 'L' || d == 'R')) { post(d == 'L' ? EV_SWIPE_L : EV_SWIPE_R, 0, 0); return true; }
     if (sscanf(line, "TAP %d %d", &x, &y) == 2) { post(EV_TAP, x, y); return true; }
     return false;
 }
@@ -940,6 +940,7 @@ void eng_spectrum_run(eng_tune_fn tune, eng_spectrum_fn spectrum,
     gpio_config(&io);
     xTaskCreate(button_task, "eng_btn", 2048, NULL, 5, NULL);
     s_ev = xQueueCreate(8, sizeof(ev_t));
+    if (!s_ev) abort();
 #ifdef ENG_BOARD_TOUCH28
     touch_start();
 #endif

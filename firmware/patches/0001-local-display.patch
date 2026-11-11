@@ -1,0 +1,248 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1b19d83..073ae28 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -18,4 +18,12 @@ endif()
+ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+ idf_build_set_property(MINIMAL_BUILD ON)
+ idf_build_set_property(ESP_SDR_STREAMING "${ESP_SDR_STREAMING}")
++# Local display build (esp32c5-spectrum, firmware/). A
++# build property, like ESP_SDR_STREAMING, so main/ sees it in the early pass
++# where component requirements are worked out.
++option(ESP_SDR_LOCAL_DISPLAY "Draw the spectrum on an attached screen, no host" OFF)
++idf_build_set_property(ESP_SDR_LOCAL_DISPLAY "${ESP_SDR_LOCAL_DISPLAY}")
++# Board name for the ID? command, so a host can tell boards apart.
++set(BOARD_NAME "" CACHE STRING "Board name returned by ID?; empty leaves ID? out")
++idf_build_set_property(BOARD_NAME "${BOARD_NAME}")
+ project(esp_sdr)
+diff --git a/main/CMakeLists.txt b/main/CMakeLists.txt
+index e00b353..4a610db 100644
+--- a/main/CMakeLists.txt
++++ b/main/CMakeLists.txt
+@@ -62,6 +62,12 @@ if(IDF_TARGET STREQUAL "esp32c61" OR IDF_TARGET STREQUAL "esp32s31")
+     list(APPEND sources "common/burst_gain_table.c")
+ endif()
+ 
++# Local display build (esp32c5-spectrum, firmware/).
++idf_build_get_property(local_display ESP_SDR_LOCAL_DISPLAY)
++if(local_display)
++    list(APPEND dependencies eng_spectrum_ui)
++endif()
++
+ idf_component_register(SRCS "${receiver}" ${sources}
+     LDFRAGMENTS ${fragments}
+     PRIV_INCLUDE_DIRS "common" ${target_includes} "diagnostics"
+@@ -88,6 +94,13 @@ endif()
+ if(IDF_TARGET STREQUAL "esp32c2")
+     target_link_options(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=soc_get_available_memory_regions")
+ endif()
++if(local_display)
++    target_compile_definitions(${COMPONENT_LIB} PRIVATE ESP_SDR_LOCAL_DISPLAY=1)
++endif()
++idf_build_get_property(board_name BOARD_NAME)
++if(board_name)
++    target_compile_definitions(${COMPONENT_LIB} PRIVATE "BOARD_NAME=\"${board_name}\"")
++endif()
+ foreach(probe IN LISTS probes)
+     if(${probe})
+         target_compile_definitions(${COMPONENT_LIB} PRIVATE "${probe}=1")
+diff --git a/main/common/spectrum.c b/main/common/spectrum.c
+index 6abfbf9..1d37603 100644
+--- a/main/common/spectrum.c
++++ b/main/common/spectrum.c
+@@ -18,7 +18,14 @@
+ #include <stdio.h>
+ #include <string.h>
+ 
++#ifdef ESP_SDR_LOCAL_DISPLAY
++/* The engineer screen uses 1024-point FFTs only. Halving the buffers frees
++ * ~13 KB of the C5's .bss, which otherwise has ~1 KB left before the RF dump
++ * bank (targets/esp32c5/sram_guard.ld). */
++#define MAX_FFT      1024u
++#else
+ #define MAX_FFT      2048u
++#endif
+ #define HEADER_BYTES 28u
+ #if CONFIG_IDF_TARGET_ESP32C2
+ /* Quiescent during RF capture; keep heap/stacks in the other SRAM banks. */
+@@ -281,3 +288,51 @@ bool spectrum_command(const char *line, unsigned frequency_mhz, spectrum_acquire
+     send_text(text);
+     return true;
+ }
++
++/* Local display build (firmware/ in the esp32c5-spectrum
++ * repository). The same capture, window, FFT, DC removal and power path as SPEC,
++ * returning MEAN-power codes (SPEC's detector 0) to the caller instead of
++ * sending frames. Mean, as a bench analyser's average detector: a busy channel
++ * reads as a steady level rather than flickering with each burst. */
++static void snapshot_no_poll(void *context) {
++    (void)context;
++}
++bool spectrum_snapshot(unsigned n, unsigned rate, unsigned ffts, spectrum_acquire_fn acquire, uint8_t *codes) {
++    if (!rate_hz(rate) || n < 256 || n > MAX_FFT || (n & (n - 1)) || !ffts) return false;
++    spectrum_fft_init();
++    if (!ready) return false;
++    if (setup_n != n) {
++        for (unsigned j = 0; j < n; j++) window[j] = (int16_t)lrintf(16383.5f * (1 - cosf(2 * M_PI * j / n)));
++        setup_n = n;
++    }
++    spectrum_dc_mode = 1;
++    spectrum_dc_t dc = {0};
++    memset(&powers, 0, n * sizeof(float));
++    for (unsigned k = 0; k < ffts; k++) {
++        const uint32_t *words;
++        unsigned elapsed;
++        if (!acquire(n, rate, &words, &elapsed)) return false;
++        for (unsigned j = 0; j < n; j++) {
++            int32_t i = ((int32_t)(words[j] << 22) >> 22), q = ((int32_t)(words[j] << 12) >> 22);
++            fft_data[2 * j] = clamp16((i * window[j]) >> 9);
++            fft_data[2 * j + 1] = clamp16((q * window[j]) >> 9);
++        }
++        spectrum_fft_poll(fft_data, n, dsps_fft_w_table_sc16, snapshot_no_poll, NULL);
++        spectrum_dc_apply(&dc, fft_data, n);
++        for (unsigned j = 0; j < n; j++) {
++            powers.mean[j] += (float)spectrum_complex_power(fft_data[2 * j], fft_data[2 * j + 1]);
++        }
++    }
++    /* Undo the FFT's bit-reversed order, exactly as pack_spectrum() does. */
++    const float scale = 1.0f / ffts;
++    for (unsigned j = 0, bin = 0; j < n; j++) {
++        codes[bin] = spectrum_mean_power_code(powers.mean[j] * scale);
++        unsigned bit = n >> 1;
++        while (bin & bit) {
++            bin ^= bit;
++            bit >>= 1;
++        }
++        bin ^= bit;
++    }
++    return true;
++}
+diff --git a/main/common/spectrum.h b/main/common/spectrum.h
+index c4233e1..d84a144 100644
+--- a/main/common/spectrum.h
++++ b/main/common/spectrum.h
+@@ -6,6 +6,11 @@
+ typedef bool (*spectrum_acquire_fn)(unsigned n, unsigned rate, const uint32_t **words, unsigned *elapsed_us);
+ bool spectrum_command(const char *line, unsigned frequency_mhz, spectrum_acquire_fn acquire);
+ 
++/* Local display: one mean-power spectrum of `ffts` snapshots,
++ * written to `codes` (n bytes, natural FFT order, same power codes as SPC1).
++ * DC removal is on. No serial output. */
++bool spectrum_snapshot(unsigned n, unsigned rate, unsigned ffts, spectrum_acquire_fn acquire, uint8_t *codes);
++
+ bool spectrum_fft_init(void);
+ 
+ /* Snapshot and continuous backends run exclusively. Reuse their large buffers
+diff --git a/main/families/c5_c6_c61/receiver.c b/main/families/c5_c6_c61/receiver.c
+index 7d380c3..2dec359 100644
+--- a/main/families/c5_c6_c61/receiver.c
++++ b/main/families/c5_c6_c61/receiver.c
+@@ -7,6 +7,7 @@
+ #include "esp_cpu.h"
+ #include "esp_event.h"
+ #include "esp_log.h"
++#include "esp_mac.h"
+ #include "esp_phy_cert_test.h"
+ #include "esp_rom_crc.h"
+ #include "esp_rom_sys.h"
+@@ -273,6 +274,68 @@ static bool ring_test(const char *line) {
+ 
+ static void handle_command(char *line);
+ 
++#ifdef ESP_SDR_LOCAL_DISPLAY
++/* Local display: the board drives its own receiver and draws
++ * the spectrum on its screen, with no host. See eng_spectrum_ui.h. */
++#include "eng_spectrum_ui.h"
++#include "rx_bandwidth.h"
++static void local_tune(unsigned mhz) {
++    frequency_mhz = mhz;
++    rx_ready = false;
++    prepare_rx();
++}
++static bool local_spectrum(unsigned rate, unsigned n, unsigned ffts, uint8_t *codes) {
++    return spectrum_snapshot(n, rate, ffts, spectrum_acquire, codes);
++}
++/* The receiver as the screen wants it: widest bandwidth, PHY-calibrated
++ * filter, hardware AGC. Applied at start and again after a host session,
++ * which may have changed any of them. */
++static void local_rx_defaults(void) {
++    rx_analog_filter = rx_bandwidth_dcap(0);
++#if CONFIG_IDF_TARGET_ESP32C5
++    rx_channel_mode = rx_bandwidth_phy_mode(0);
++#endif
++#if !CONFIG_IDF_TARGET_ESP32C6
++    rx_filter = -1;
++#endif
++    gain_mode = GAIN_HARDWARE;
++    rx_ready = false;
++    prepare_rx();
++}
++/* A phone or laptop (ESP-WebSDR, over USB) can take the radio at any time.
++ * local_host_waiting() is polled between captures; a complete command line is
++ * kept for local_host_serve(), which serves the host exactly as the stock
++ * firmware does until it has been silent for 10 s, then restores the screen's
++ * receiver settings. */
++static char local_line[128];
++static int local_status;
++static bool local_host_waiting(void) {
++    local_status = burst_serial_poll_line(local_line, sizeof(local_line));
++    /* the screen's own commands (SNAP, TAP x y, ...) are answered here and
++     * never reach the host protocol, so a screenshot does not hand the radio to
++     * a viewer. */
++    if (local_status > 0 && eng_spectrum_local_command(local_line, burst_serial_send)) local_status = 0;
++    return local_status != 0;
++}
++static void local_host_serve(void) {
++    int64_t last = esp_timer_get_time();
++    for (;;) {
++        if (local_status > 0) {
++            if (!strcmp(local_line, "RELEASE")) reply("OK\n");
++            else handle_command(local_line);
++            last = esp_timer_get_time();
++        } else if (local_status < 0) {
++            reply("ERR command_length\n");
++            last = esp_timer_get_time();
++        }
++        if (esp_timer_get_time() - last > 10000000) break;
++        local_status = burst_serial_poll_line(local_line, sizeof(local_line));
++        if (!local_status) vTaskDelay(1);
++    }
++    local_rx_defaults();
++}
++#endif
++
+ void app_main(void) {
+ 
+     esp_log_level_set("*", ESP_LOG_NONE);
+@@ -300,6 +363,11 @@ void app_main(void) {
+     esp_log_level_set("*", ESP_LOG_NONE);
+     (void)usb_serial_jtag_wait_tx_done(pdMS_TO_TICKS(100));
+     ESP_ERROR_CHECK(usb_serial_jtag_driver_uninstall());
++#ifdef ESP_SDR_LOCAL_DISPLAY
++    burst_serial_init();   /* so a phone or laptop can still take over */
++    local_rx_defaults();
++    eng_spectrum_run(local_tune, local_spectrum, local_host_waiting, local_host_serve); /* does not return */
++#endif
+     burst_serial_init();
+     burst_serial_serve(handle_command);
+ }
+@@ -308,6 +376,19 @@ void app_main(void) {
+ #include "burst_commands.h"
+ 
+ static void handle_command(char *line) {
++#ifdef BOARD_NAME
++    /* "ID?" names the board and its MAC, because every C5 shows the
++     * same USB name in a browser's port picker. Stock ESP-SDR has no ID?. */
++    if (!strcmp(line, "ID?")) {
++        uint8_t m[6] = {0};
++        esp_read_mac(m, ESP_MAC_BASE);
++        char answer[96];
++        snprintf(answer, sizeof(answer), "ID %02X:%02X:%02X:%02X:%02X:%02X %s\n",
++                 m[0], m[1], m[2], m[3], m[4], m[5], BOARD_NAME);
++        reply(answer);
++        return;
++    }
++#endif
+     if (burst_version_command(line)) return;
+     if (burst_gpio_command(line)) return;
+ #ifdef RING_PROBE

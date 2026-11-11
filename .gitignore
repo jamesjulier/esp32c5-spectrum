@@ -1,0 +1,10 @@
+# ESP-SDR is fetched by firmware/build.sh, never committed
+firmware/esp-sdr/
+firmware/build*/
+firmware/dist/
+firmware/.cache/
+# web viewer
+web/node_modules/
+web/dist/
+.DS_Store
+web/public/replay*.json

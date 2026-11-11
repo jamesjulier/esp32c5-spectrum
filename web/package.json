@@ -1,0 +1,32 @@
+{
+  "name": "esp32c5-spectrum-viewer",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Browser viewer and flasher for the ESP32-C5 spectrum analyser",
+  "license": "GPL-3.0-or-later",
+  "author": "James Julier",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "icons": "python3 tools/make_icons.py"
+  },
+  "dependencies": {
+    "esptool-js": "0.7.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "spark-md5": "3.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/spark-md5": "3.0.5",
+    "@vitejs/plugin-react": "6.3.0",
+    "typescript": "5.7.3",
+    "vite": "8.3.8",
+    "vite-plugin-pwa": "2.0.0",
+    "vitest": "5.1.0"
+  }
+}

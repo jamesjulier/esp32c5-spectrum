@@ -1,0 +1,12 @@
+# Waveshare ESP32-C5-LCD-1.47: 4 MB flash. Applied after ESP-SDR's own C5
+# defaults (sdkconfig.defaults.esp32c5), which set 2 MB.
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+
+# Fast-RAM budget. Stock ESP-SDR leaves only ~1.2 KB between .bss and the
+# 128 KB bank its C5 captures own (main/targets/esp32c5/sram_guard.ld fails the
+# link otherwise). The screen's SPI and DMA drivers put their interrupt paths
+# in IRAM by default, ~8 KB; a display does not need to run while flash is
+# busy, so they stay in flash.
+# CONFIG_SPI_MASTER_ISR_IN_IRAM is not set
+# CONFIG_GDMA_CTRL_FUNC_IN_IRAM is not set
+# CONFIG_GDMA_ISR_HANDLER_IN_IRAM is not set

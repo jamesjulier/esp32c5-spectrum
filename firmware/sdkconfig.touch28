@@ -1,0 +1,4 @@
+# Waveshare ESP32-C5-Touch-LCD-2.8: 32 MB flash. Applied after
+# sdkconfig.waveshare, whose fast-RAM settings it keeps.
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=n
+CONFIG_ESPTOOLPY_FLASHSIZE_32MB=y

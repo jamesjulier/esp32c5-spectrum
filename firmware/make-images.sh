@@ -37,14 +37,16 @@ merge "$HERE/build-stock"   xiao-c5-esp-sdr.bin
 
 SDR_COMMIT="$(git -C "$HERE/esp-sdr" rev-parse HEAD)"
 OUR_COMMIT="$(git -C "$HERE" rev-parse HEAD)"
-python3 - "$OUT" "$SDR_COMMIT" "$OUR_COMMIT" <<'PY'
+VERSION="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['version'])" "$HERE/../web/package.json")"
+python3 - "$OUT" "$SDR_COMMIT" "$OUR_COMMIT" "$VERSION" <<'PY'
 import hashlib, json, os, sys, datetime
-out, sdr, ours = sys.argv[1:4]
+out, sdr, ours, version = sys.argv[1:5]
 def entry(name, board, label, flash, kind):
     p = os.path.join(out, name); b = open(p, "rb").read()
     return {"board": board, "label": label, "file": name, "chip": "esp32c5", "offset": "0x0",
             "flash_size": flash, "kind": kind, "bytes": len(b), "sha256": hashlib.sha256(b).hexdigest()}
 m = {
+  "version": version,
   "built": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
   "esp_sdr": {"repo": "https://github.com/ESPARGOS/esp-sdr", "mirror": "https://github.com/jamesjulier/esp-sdr",
               "commit": sdr, "licence": "GPL-3.0", "author": "Florian Euchner (ESPARGOS)"},

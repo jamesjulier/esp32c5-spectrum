@@ -1,11 +1,14 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+import pkg from "./package.json" with { type: "json" };
 
 // Relative paths, so the same build works at a GitHub Pages project address
 // (https://<user>.github.io/esp32c5-spectrum/) and anywhere else.
 export default defineConfig({
   base: "./",
+  // The release version, from package.json, shown in the footer.
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [
     react(),
     VitePWA({

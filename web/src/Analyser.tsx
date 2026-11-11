@@ -13,6 +13,7 @@ import {
   BUSY_TEXT, channelAt, drawChannels, drawDensity, drawFall, drawMarks, drawTrace, savePicture, scaleGradient,
 } from "./lib/spectrum/draw";
 import { Callout, Field, Segmented, UsbIcon } from "./ui";
+import { useInstall } from "./install";
 
 type Mode = "live" | "density" | "channels";
 type Chart = "trace" | "fall" | "dens" | "chan";
@@ -36,6 +37,7 @@ export function Analyser({ onOpenFirmware }: { onOpenFirmware: () => void }) {
 
   const [link, setLink] = useState<Link>({ kind: "idle" });
   const [error, setError] = useState<string | null>(null);
+  const [canInstall, install] = useInstall();
   const [note, setNote] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("live");
   const [focus, setFocus] = useState<Chart | null>(null);
@@ -293,9 +295,18 @@ export function Analyser({ onOpenFirmware }: { onOpenFirmware: () => void }) {
                   <li>Plug the board into this computer.</li>
                   <li>Click <b>Connect board</b> and pick <b>USB JTAG/serial debug unit</b>.</li>
                 </ol>
-                <button type="button" className="btn primary" onClick={connect} disabled={busy}>
-                  <UsbIcon />{busy ? "Connecting…" : "Connect board"}
-                </button>
+                <div className="row" style={{ justifyContent: "center", gap: 8 }}>
+                  <button type="button" className="btn primary" onClick={connect} disabled={busy}>
+                    <UsbIcon />{busy ? "Connecting…" : "Connect board"}
+                  </button>
+                  {canInstall && <button type="button" className="btn" onClick={install}
+                    title="Its own window and icon, and it works offline">Install app</button>}
+                </div>
+                <div className="hello">
+                  <img src="./james.png" alt="James Julier" width="48" height="48" />
+                  <p>Hi, I&apos;m James, and I made this.
+                    {canInstall ? " Install it and it's one click away next time." : ""} Have fun, and tell me what you find.</p>
+                </div>
               </div>
             </div>
           ) : (

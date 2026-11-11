@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "built": "2026-11-11T19:21Z",
+  "built": "2026-11-11T19:27Z",
   "esp_sdr": {
     "repo": "https://github.com/ESPARGOS/esp-sdr",
     "mirror": "https://github.com/jamesjulier/esp-sdr",
@@ -11,7 +11,7 @@
   "patch": {
     "repo": "https://github.com/jamesjulier/esp32c5-spectrum",
     "path": "firmware/patches/0001-local-display.patch",
-    "commit": "dbe8aadbf735d4d6f137fb46cf1302752e2b3847",
+    "commit": "6523f398f117fe246e4826d1e3cdd157e0848996",
     "licence": "GPL-3.0"
   },
   "images": [
@@ -24,7 +24,7 @@
       "flash_size": "4MB",
       "kind": "spectrum-on-screen",
       "bytes": 907312,
-      "sha256": "c96e74f967fb96316864aa146f7e1095f4a148439dfb2db853be1589c116bd0d"
+      "sha256": "5cd7f4d460f2dc3936a194b75f6326d8f139916876864a30b3e1cafc97c64114"
     },
     {
       "board": "lilygo-t-dongle-c5",
@@ -35,7 +35,7 @@
       "flash_size": "16MB",
       "kind": "spectrum-on-screen",
       "bytes": 907104,
-      "sha256": "cbd3b8499a58714cc2afeec182b9407e72df265330372b0c269a56f29372cf1b"
+      "sha256": "41f512ca452bd88f94c9fe178bba27eb25acdc259feedd76f1970acf6d9919f6"
     },
     {
       "board": "xiao-esp32c5",
@@ -46,7 +46,7 @@
       "flash_size": "2MB",
       "kind": "esp-sdr-stock",
       "bytes": 869264,
-      "sha256": "1aec8aa0ad89f44c95079511185d64f85edee50d738cfb3512933f85043787c0"
+      "sha256": "54c784baee7536a45541fd1dffef00b3d32c676130c4c045bb65ad34c8181131"
     }
   ]
 }

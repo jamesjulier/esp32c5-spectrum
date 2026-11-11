@@ -3,8 +3,7 @@
  * open the board's serial port and a port has one owner.
  */
 import { useEffect, useState } from "react";
-import { webSerialSupported } from "./lib/flasher";
-import { analyserSupported } from "./lib/webusb";
+import { analyserSupported, flashSupported as canFlash } from "./lib/webusb";
 import { Analyser } from "./Analyser";
 import { Firmware } from "./Firmware";
 import { Callout } from "./ui";
@@ -20,7 +19,7 @@ export function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
   const go = (t: Tab) => { history.replaceState(null, "", t === "firmware" ? "#firmware" : window.location.pathname + window.location.search); setTab(t); };
-  const flashSupported = webSerialSupported();
+  const flashSupported = canFlash();
 
   return (
     <div className="app">

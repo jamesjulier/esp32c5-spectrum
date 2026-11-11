@@ -114,14 +114,28 @@ export function webUsbSupported(): boolean {
   return typeof navigator !== "undefined" && "usb" in navigator && window.isSecureContext;
 }
 
-/** The analyser runs on Web Serial (computers) or WebUSB (Chrome on Android). */
-export function analyserSupported(): boolean {
-  return webSerialSupported() || webUsbSupported();
+/**
+ * Chrome on Android has Web Serial too, but there it only reaches Bluetooth serial
+ * devices: its port picker shows "No compatible devices found" for a USB board
+ * (seen on a phone, 2026-11-11). So on Android a USB board is always WebUSB.
+ */
+export function isAndroid(): boolean {
+  return typeof navigator !== "undefined" && /Android/i.test(navigator.userAgent);
 }
 
-/** The browser's board picker: Web Serial where there is one, otherwise WebUSB. */
+/** Flashing needs Web Serial to reach a USB board: a computer, not Android. */
+export function flashSupported(): boolean {
+  return webSerialSupported() && !isAndroid();
+}
+
+/** The analyser runs on Web Serial (computers) or WebUSB (Chrome on Android). */
+export function analyserSupported(): boolean {
+  return flashSupported() || webUsbSupported();
+}
+
+/** The browser's board picker: Web Serial on a computer, otherwise WebUSB. */
 export async function requestAnalyserPort(): Promise<SerialPortLike> {
-  if (webSerialSupported()) return requestBoardPort();
+  if (flashSupported()) return requestBoardPort();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const usb = (navigator as any).usb;
   return new WebUsbPort(await usb.requestDevice({ filters: [{ vendorId: ESPRESSIF_USB_VID }] }));

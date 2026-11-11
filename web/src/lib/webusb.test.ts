@@ -103,3 +103,34 @@ describe("WebUSB (Chrome on Android)", () => {
     await expect(pending).rejects.toThrow(/device gone/);
   });
 });
+
+describe("which connection a browser uses", () => {
+  const as = (ua: string, serial: boolean, usb: boolean) => {
+    const nav: Record<string, unknown> = { userAgent: ua };
+    if (serial) nav.serial = {};
+    if (usb) nav.usb = {};
+    Object.defineProperty(globalThis, "navigator", { value: nav, configurable: true });
+    Object.defineProperty(globalThis, "window", { value: { isSecureContext: true }, configurable: true });
+  };
+  const ANDROID = "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0 Mobile Safari/537.36";
+  const MAC = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0 Safari/537.36";
+
+  it("Chrome on Android, which has Web Serial too, uses WebUSB and cannot flash", async () => {
+    const { analyserSupported, flashSupported, isAndroid } = await import("./webusb");
+    as(ANDROID, true, true);
+    expect(isAndroid()).toBe(true);
+    expect(flashSupported()).toBe(false);
+    expect(analyserSupported()).toBe(true);
+  });
+  it("Chrome on a computer uses Web Serial and can flash", async () => {
+    const { analyserSupported, flashSupported } = await import("./webusb");
+    as(MAC, true, true);
+    expect(flashSupported()).toBe(true);
+    expect(analyserSupported()).toBe(true);
+  });
+  it("Safari has neither", async () => {
+    const { analyserSupported } = await import("./webusb");
+    as("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Safari/605.1.15", false, false);
+    expect(analyserSupported()).toBe(false);
+  });
+});

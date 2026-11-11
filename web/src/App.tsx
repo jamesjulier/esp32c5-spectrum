@@ -4,6 +4,7 @@
  */
 import { useEffect, useState } from "react";
 import { webSerialSupported } from "./lib/flasher";
+import { analyserSupported } from "./lib/webusb";
 import { Analyser } from "./Analyser";
 import { Firmware } from "./Firmware";
 import { Callout } from "./ui";
@@ -19,7 +20,7 @@ export function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
   const go = (t: Tab) => { history.replaceState(null, "", t === "firmware" ? "#firmware" : window.location.pathname + window.location.search); setTab(t); };
-  const supported = webSerialSupported();
+  const flashSupported = webSerialSupported();
 
   return (
     <div className="app">
@@ -38,15 +39,21 @@ export function App() {
       </header>
 
       <main>
-        {!supported ? (
-          <Callout kind="warn" title="This needs Chrome or Edge on a computer.">
-            It talks to the board over USB with Web Serial, which Safari, Firefox and phones do not have.
+        {!analyserSupported() ? (
+          <Callout kind="warn" title="This needs Chrome or Edge on a computer, or Chrome on Android.">
+            It talks to the board over USB, which Safari, Firefox and iPhones do not allow.
           </Callout>
-        ) : tab === "analyser" ? <Analyser onOpenFirmware={() => go("firmware")} /> : <Firmware onOpenAnalyser={() => go("analyser")} />}
+        ) : tab === "analyser" ? <Analyser onOpenFirmware={() => go("firmware")} />
+          : !flashSupported ? (
+            <Callout kind="warn" title="Flashing needs Chrome or Edge on a computer.">
+              The analyser works on this phone. To put the firmware on a new board, use this page on a Mac,
+              Windows, Linux or ChromeOS computer.
+            </Callout>
+          ) : <Firmware onOpenAnalyser={() => go("analyser")} />}
       </main>
 
       <footer className="foot">
-        <span>By <a href="https://www.linkedin.com/in/james-alexander-julier-2137844/" rel="noopener noreferrer">James Julier</a></span>
+        <span>By <a href="https://www.linkedin.com/in/james-alexander-julier-2137844/" rel="noopener noreferrer">JJ</a></span>
         <span>v{__APP_VERSION__}</span>
         <span>Built on <a href="https://github.com/ESPARGOS/esp-sdr">ESP-SDR</a> by Florian Euchner (ESPARGOS)</span>
         <span><a href="https://github.com/jamesjulier/esp32c5-spectrum">Source code</a> · GPL-3.0 · <a href="./third-party-notices.txt">Third-party licences</a></span>

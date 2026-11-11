@@ -19,7 +19,7 @@
 <p align="center">
   <a href="https://github.com/jamesjulier/esp32c5-spectrum/actions/workflows/pages.yml"><img src="https://github.com/jamesjulier/esp32c5-spectrum/actions/workflows/pages.yml/badge.svg" alt="Web app build"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-GPL--3.0-blue" alt="Licence: GPL-3.0"></a>
-  <img src="https://img.shields.io/badge/browser-Chrome%20%7C%20Edge-informational" alt="Works in Chrome and Edge">
+  <img src="https://img.shields.io/badge/browser-Chrome%20%7C%20Edge%20%7C%20Android-informational" alt="Works in Chrome and Edge, and Chrome on Android">
   <img src="https://img.shields.io/badge/radio-receive%20only-success" alt="Receive only">
 </p>
 
@@ -47,7 +47,8 @@ happens in the same web page, so there's nothing to install.
 ## How to use it
 
 You'll need one of the [supported boards](#supported-boards), a USB-C cable, and Chrome or Edge
-on a computer (Mac, Windows, Linux or a Chromebook).
+on a computer (Mac, Windows, Linux or a Chromebook). Once it's flashed, the analyser also works in
+Chrome on an Android phone.
 
 ### 1. Put the firmware on it (once)
 
@@ -68,7 +69,7 @@ Give it power from any USB port or power bank and it starts measuring.
 The 2.8" touch board does more: swipe between bands, tap to read a frequency, tap a channel
 number to zoom in ([all the gestures](#touch-on-the-28-board)).
 
-### 3. Or plug it into your computer
+### 3. Or plug it into your computer or Android phone
 
 1. Open the app's **Analyser** tab and click **Connect board**.
 2. The board's screen says **PHONE CONNECTED** while the app has the radio. It goes back to
@@ -130,8 +131,9 @@ calibration blip as it powers up.
 It works in snapshots, about 285 a second with short gaps between them, so a very brief burst can
 slip past unseen.
 
-The browser app needs Chrome or Edge, because it talks to the board over Web Serial. Safari,
-Firefox and phones can't do that yet. The board on its own is happy with any USB power.
+The browser app needs Chrome or Edge on a computer, or Chrome on Android with the board plugged
+into the phone (USB-C to USB-C). Flashing needs a computer. Safari, Firefox and iPhones can't talk
+to USB devices, so they're out. The board on its own is happy with any USB power.
 
 There are two easter eggs in the app. One of them involves your microwave.
 
@@ -143,9 +145,9 @@ way are in **[docs/technical.md](docs/technical.md)**.
 
 ## Credits
 
-<img src="https://github.com/jamesjulier.png?size=128" width="64" align="left" alt="James Julier">
+<img src="https://github.com/jamesjulier.png?size=128" width="64" align="left" alt="JJ">
 
-Made by **[James Julier](https://github.com/jamesjulier)** ([LinkedIn](https://www.linkedin.com/in/james-alexander-julier-2137844/)). Issues, ideas and photos of it
+Made by **[JJ](https://github.com/jamesjulier)** (James Julier, [LinkedIn](https://www.linkedin.com/in/james-alexander-julier-2137844/)). Issues, ideas and photos of it
 finding something odd in your house are all welcome.
 <br clear="left">
 

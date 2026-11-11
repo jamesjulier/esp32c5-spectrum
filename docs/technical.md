@@ -91,6 +91,9 @@ restores its receiver settings and goes back to drawing.
 - **ESP-SDR's own viewer**, [espargos.net/espsdr/app](https://espargos.net/espsdr/app/), also works,
   in Chrome on a laptop (Web Serial) or on Android (WebUSB).
 
+On Chrome for Android the app talks to the board over WebUSB instead of Web Serial, through
+`web/src/lib/webusb.ts`, which presents the same port to the analyser.
+
 Our builds add one command, **`ID?`**, which replies with the board's MAC and name, for example
 `ID 02:00:00:C5:00:01 Waveshare ESP32-C5-LCD-1.47`. Every C5 shows the same USB name in a browser's
 port picker, so without it a host cannot tell boards apart.
@@ -204,4 +207,5 @@ Additions only; each changed file is marked "Modified by James Julier, 2026".
 - **Network names on the overlay.** That needs a Wi-Fi scan, and the radio is busy being the analyser.
 - **The 2.8" in the release images and the web app's Firmware tab.** It is built and flashed with
   `build.sh`.
-- **WebUSB for Android** in the web app. iPhones cannot use either.
+- **Flashing from Android.** The analyser runs on Chrome for Android over WebUSB (`web/src/lib/webusb.ts`);
+  flashing still needs Web Serial on a computer. iPhones can use neither.

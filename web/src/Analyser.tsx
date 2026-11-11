@@ -6,7 +6,7 @@
  * ?replay=<url> plays a recording instead of a board, for testing without hardware.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { requestBoardPort } from "./lib/flasher";
+import { requestAnalyserPort } from "./lib/webusb";
 import { FatalLinkError, ReplaySource, SerialSource, type Detector } from "./lib/spectrum/serial";
 import { Analyser as Engine, BANDS, BLOCKS, ROWS, type Block, type Lines, type Readout, type RowSec } from "./lib/spectrum/analyser";
 import {
@@ -145,7 +145,7 @@ export function Analyser({ onOpenFirmware }: { onOpenFirmware: () => void }) {
     setError(null);
     let s: SerialSource | null = null;
     try {
-      const port = await requestBoardPort();
+      const port = await requestAnalyserPort();
       setLink({ kind: "connecting" });
       s = new SerialSource(port, (note) => setLink((l) => (l.kind === "connected" || l.kind === "connecting" ? { ...l, note } : l)));
       const info = await s.open();

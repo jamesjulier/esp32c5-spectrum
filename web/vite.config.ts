@@ -10,13 +10,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icon.svg"],
+      includeAssets: ["icon.svg", "favicon.svg"],
       manifest: {
         name: "ESP32-C5 Spectrum",
         short_name: "Spectrum",
         description: "A 2.4 and 5 GHz spectrum analyser on an ESP32-C5, over USB.",
-        theme_color: "#0b1018",
-        background_color: "#0b1018",
+        theme_color: "#0f1216",
+        background_color: "#0f1216",
         display: "standalone",
         start_url: ".",
         scope: ".",
@@ -29,6 +29,8 @@ export default defineConfig({
       workbox: {
         // The firmware images too, so the installed app can flash a board offline.
         globPatterns: ["**/*.{js,css,html,svg,png,json,bin}"],
+        // Local test recordings (gitignored, never published) stay out of the cache.
+        globIgnores: ["**/replay*.json"],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
     }),

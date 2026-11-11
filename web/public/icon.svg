@@ -1,5 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs><linearGradient id="g" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f00"/><stop offset=".5" stop-color="#ff0"/><stop offset="1" stop-color="#0f0"/></linearGradient></defs>
-  <rect width="64" height="64" rx="13" fill="#0b1018"/>
-  <path d="M10 54 L10 48 C14 47 15 30 19 30 C23 30 24 47 27 47 C29 47 30 16 33 16 C36 16 37 46 39 46 L41 46 L42 26 L43 46 C46 46 47 34 50 34 C53 34 53 48 54 48 L54 54 Z" fill="url(#g)"/>
+  <title>esp32c5-spectrum</title>
+  <defs><linearGradient id="t" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff3b1f"/><stop offset=".45" stop-color="#ffb000"/><stop offset=".75" stop-color="#e6f000"/><stop offset="1" stop-color="#2fe66b"/></linearGradient></defs>
+  <rect width="64" height="64" rx="14" fill="#0f1216"/>
+  <path d="M9 37 L9 34 L14 33 L17 26 L20 33 L24 32 L27 14 L30 31 L34 32 L37 22 L40 31 L44 33 L47 28 L50 33 L55 34 L55 37 Z" fill="url(#t)"/>
+  <rect x="9" y="41" width="9" height="3" fill="#0b4f6c"/><rect x="18" y="41" width="9" height="3" fill="#13a3a0"/><rect x="27" y="41" width="5" height="3" fill="#ffc400"/><rect x="32" y="41" width="9" height="3" fill="#13a3a0"/><rect x="41" y="41" width="14" height="3" fill="#0b4f6c"/>
+  <rect x="9" y="45" width="13" height="3" fill="#0b3550"/><rect x="22" y="45" width="6" height="3" fill="#13a3a0"/><rect x="28" y="45" width="4" height="3" fill="#ff8a00"/><rect x="32" y="45" width="7" height="3" fill="#0b4f6c"/><rect x="39" y="45" width="6" height="3" fill="#13a3a0"/><rect x="45" y="45" width="10" height="3" fill="#0b3550"/>
+  <rect x="9" y="49" width="17" height="3" fill="#0b4f6c"/><rect x="26" y="49" width="6" height="3" fill="#ffc400"/><rect x="32" y="49" width="12" height="3" fill="#13a3a0"/><rect x="44" y="49" width="11" height="3" fill="#0b3550"/>
 </svg>

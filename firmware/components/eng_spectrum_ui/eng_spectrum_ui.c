@@ -1011,8 +1011,8 @@ void eng_spectrum_run(eng_tune_fn tune, eng_spectrum_fn spectrum,
             s_batt = b < 0 ? -1 : s_batt < 0 ? b : s_batt * 0.7f + b * 0.3f;
         }
         render(v, sweep_ms);
-        // Started from the engineer screen: confirm this app once it has drawn,
-        // or the bootloader's rollback returns to the engineer screen on the
+        // Started from a companion app: confirm this app once it has drawn,
+        // or the bootloader's rollback returns to the companion app on the
         // next restart. A crash before here rolls back by itself, as it should.
         static bool confirmed;
         if (!confirmed) { confirmed = true; esp_ota_mark_app_valid_cancel_rollback(); }

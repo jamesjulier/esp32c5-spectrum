@@ -36,6 +36,7 @@ export function Analyser({ onOpenFirmware }: { onOpenFirmware: () => void }) {
 
   const [link, setLink] = useState<Link>({ kind: "idle" });
   const [error, setError] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("live");
   const [focus, setFocus] = useState<Chart | null>(null);
   const [, setTick] = useState(0);                  // re-render on analyser changes
@@ -98,6 +99,37 @@ export function Analyser({ onOpenFirmware }: { onOpenFirmware: () => void }) {
     fetch(url).then((r) => r.json()).then((d) => { an.setSource(new ReplaySource(d)); setLink({ kind: "replay" }); })
       .catch((e) => { setLink({ kind: "error" }); setError(`Replay failed: ${e instanceof Error ? e.message : e}`); });
   }, [an]);
+
+  // Two easter eggs, typed anywhere on the page:
+  //   the Konami code  green-phosphor oscilloscope colours (again to switch back)
+  //   "microwave"      jump to where microwave ovens leak, about 2.45 GHz (channel 9)
+  useEffect(() => {
+    const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+    let keys: string[] = [], typed = "";
+    const onKey = (ev: KeyboardEvent) => {
+      const k = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
+      keys = [...keys, k].slice(-KONAMI.length);
+      if (keys.join() === KONAMI.join()) {
+        keys = [];
+        const on = document.documentElement.classList.toggle("phosphor");
+        setNote(on ? "Phosphor mode. Somewhere, an old oscilloscope smiles." : "Back to colour.");
+        draw();
+      }
+      if (k.length === 1) typed = (typed + k).slice(-9);
+      if (typed === "microwave") {
+        typed = "";
+        an.setBand(0); an.setZoom(9);
+        setNote("Microwave ovens leak right about here, 2.45 GHz, channel 9. Go and put something in for a minute, then come back and watch.");
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [an, draw]);
+  useEffect(() => {
+    if (!note) return;
+    const t = setTimeout(() => setNote(null), 7000);
+    return () => clearTimeout(t);
+  }, [note]);
 
   // Esc leaves an enlarged chart.
   useEffect(() => {
@@ -182,6 +214,7 @@ export function Analyser({ onOpenFirmware }: { onOpenFirmware: () => void }) {
       </div>
 
       {error && <Callout kind="error" title={error.startsWith("Replay") ? "Replay not loaded." : "The board stopped."}>{error}</Callout>}
+      {note && <div className="toast" role="status">{note}</div>}
 
       <div className="row">
         <Field label="Band">
@@ -246,14 +279,23 @@ export function Analyser({ onOpenFirmware }: { onOpenFirmware: () => void }) {
 
         <div style={{ padding: "0 16px 16px", marginTop: mode === "live" ? 0 : 16 }}>
           {waiting ? (
-            <div className="empty">
+            <div className="empty welcome">
               <div>
-                <UsbIcon />
-                <p><b>Plug the board into this computer, then Connect board.</b></p>
+                <img src="./icon.svg" alt="" width="56" height="56" />
+                <h2>Hello. Let&apos;s see what&apos;s in the air.</h2>
                 <p className="muted">
-                  In Chrome&apos;s list pick <b>USB JTAG/serial debug unit</b>. A board without the spectrum
-                  firmware needs the <a href="#firmware" onClick={(e) => { e.preventDefault(); onOpenFirmware(); }}>Firmware</a> tab first.
+                  This turns a cheap ESP32-C5 board into a 2.4 and 5 GHz spectrum analyser. Wi-Fi shows up,
+                  and so does everything else: microwaves, video senders, Bluetooth.
                 </p>
+                <ol>
+                  <li>New board? Put the firmware on it from the{" "}
+                    <a href="#firmware" onClick={(e) => { e.preventDefault(); onOpenFirmware(); }}>Firmware</a> tab. It takes half a minute.</li>
+                  <li>Plug the board into this computer.</li>
+                  <li>Click <b>Connect board</b> and pick <b>USB JTAG/serial debug unit</b>.</li>
+                </ol>
+                <button type="button" className="btn primary" onClick={connect} disabled={busy}>
+                  <UsbIcon />{busy ? "Connecting…" : "Connect board"}
+                </button>
               </div>
             </div>
           ) : (

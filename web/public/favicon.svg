@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>esp32c5-spectrum</title>
+  <defs><linearGradient id="t" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff3b1f"/><stop offset=".45" stop-color="#ffb000"/><stop offset=".75" stop-color="#e6f000"/><stop offset="1" stop-color="#2fe66b"/></linearGradient></defs>
+  <rect width="64" height="64" rx="14" fill="#0f1216"/>
+  <path d="M7 40 L7 35 L16 33 L22 34 L30 8 L38 34 L44 26 L50 34 L57 35 L57 40 Z" fill="url(#t)"/>
+  <rect x="7" y="44" width="15" height="6" fill="#0b4f6c"/><rect x="22" y="44" width="16" height="6" fill="#ffc400"/><rect x="38" y="44" width="19" height="6" fill="#13a3a0"/>
+  <rect x="7" y="51" width="23" height="6" fill="#13a3a0"/><rect x="30" y="51" width="27" height="6" fill="#0b4f6c"/>
+</svg>

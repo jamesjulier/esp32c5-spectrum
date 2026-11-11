@@ -9,3 +9,4 @@ web/dist/
 .DS_Store
 web/public/replay*.json
 web/public/third-party-notices.txt
+CLAUDE.local.md

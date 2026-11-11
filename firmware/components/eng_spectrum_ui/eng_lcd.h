@@ -3,8 +3,7 @@
 //   - Waveshare ESP32-C5-LCD-1.47 (default): ST7789, 172x320, used sideways,
 //     320 x 172, so frequency runs along the long edge
 //   - Waveshare ESP32-C5-Touch-LCD-2.8 (ENG_BOARD_TOUCH28): ST7789, 240x320,
-//     upright, the same way up as the engineer screen it shares the board with
-//    , with a LiPo whose voltage it can read
+//     upright, the same way up as the board is held, with a LiPo whose voltage it can read
 //   - LilyGO T-Dongle-C5 (ENG_BOARD_TDONGLE): ST7735, 80x160, used sideways,
 //     160 x 80, a USB stick that plugs into the engineer's laptop
 #pragma once

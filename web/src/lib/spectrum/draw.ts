@@ -61,7 +61,7 @@ export interface Palette {
 }
 
 let cached: { key: string; p: Palette } | null = null;
-/** The theme's spectrum colours, read from CSS at draw time (as the Tools terminal does). */
+/** The theme's spectrum colours, read from CSS at draw time. */
 export function palette(el?: Element | null): Palette {
   const css = el && typeof getComputedStyle !== "undefined" ? getComputedStyle(el) : null;
   const v = (k: string) => (css?.getPropertyValue(`--spec-${k}`).trim() || DEFAULTS[k]);

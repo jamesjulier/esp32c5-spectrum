@@ -114,6 +114,10 @@ button { font: inherit; color: inherit; }
 }
 .empty > div { max-width: 440px; display: grid; gap: 8px; justify-items: center; }
 .empty p { margin: 0; }
+.welcome > div { max-width: 480px; gap: 12px; }
+.welcome h2 { margin: 4px 0 0; font-size: 20px; text-wrap: balance; }
+.welcome ol { text-align: left; margin: 4px 0; padding-left: 22px; display: grid; gap: 6px; }
+.welcome .btn { margin-top: 4px; }
 .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 12px; color: var(--muted); margin-top: 12px; }
 .legend .ramp { width: 160px; height: 8px; border-radius: 2px; }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); border-top: 1px solid var(--line); }
@@ -129,6 +133,22 @@ dialog {
 dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
 dialog h2 { margin: 0 0 4px; font-size: 17px; }
 dialog p { margin: 0 0 10px; font-size: 14px; }
+
+/* Easter egg: green-phosphor oscilloscope colours (the Konami code toggles it). */
+:root.phosphor {
+  --plot-bg: #010803;
+  --spec-fill: 0 #0b3d12, 0.5 #1fae3a, 1 #7dff9b;
+  --spec-heat: 0 #000000, 0.06 #000000, 0.07 #02240a, 0.4 #0c7a26, 0.7 #39d968, 1 #c8ffd6;
+  --spec-dens: 0 #02240a, 0.5 #1fae3a, 1 #c8ffd6;
+  --spec-peak: #7dff9b;
+  --spec-avg: #c8ffd6;
+}
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); z-index: 20; max-width: min(560px, calc(100% - 32px));
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px;
+  font-size: 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
 
 /* ── Firmware ──────────────────────────────────────────────────────────── */
 .narrow { max-width: 860px; display: grid; gap: 16px; }

@@ -1,0 +1,47 @@
+{
+  "built": "2026-11-11T17:55Z",
+  "esp_sdr": {
+    "repo": "https://github.com/ESPARGOS/esp-sdr",
+    "commit": "f86da81",
+    "licence": "GPL-3.0"
+  },
+  "patch": {
+    "path": "firmware/patches/0001-local-display.patch",
+    "commit": "db804de"
+  },
+  "images": [
+    {
+      "board": "waveshare-c5-lcd-1.47",
+      "label": "Waveshare ESP32-C5-LCD-1.47",
+      "file": "waveshare-c5-lcd-spectrum.bin",
+      "chip": "esp32c5",
+      "offset": "0x0",
+      "flash_size": "4MB",
+      "kind": "spectrum-on-screen",
+      "bytes": 927536,
+      "sha256": "e4247fc76d238fb24e12a8ebb04fc89d019fcce748aee4d0a773c5f586fa1732"
+    },
+    {
+      "board": "lilygo-t-dongle-c5",
+      "label": "LilyGO T-Dongle-C5",
+      "file": "tdongle-c5-spectrum.bin",
+      "chip": "esp32c5",
+      "offset": "0x0",
+      "flash_size": "16MB",
+      "kind": "spectrum-on-screen",
+      "bytes": 927328,
+      "sha256": "4604fb656ad06b81c2efaced0435fdc89649fa699ece3022b18600bc3b6aded4"
+    },
+    {
+      "board": "xiao-esp32c5",
+      "label": "XIAO ESP32-C5",
+      "file": "xiao-c5-esp-sdr.bin",
+      "chip": "esp32c5",
+      "offset": "0x0",
+      "flash_size": "2MB",
+      "kind": "esp-sdr-stock",
+      "bytes": 869264,
+      "sha256": "47ed6c391e6f53e7aca92955f17d5488e967416eca0f8da52b2f50790451c8d7"
+    }
+  ]
+}

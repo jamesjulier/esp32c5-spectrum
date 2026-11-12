@@ -13,7 +13,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icon.svg", "favicon.svg", "james.png"],
+      includeAssets: ["icon.svg", "favicon.svg", "jj-james-julier.png"],
       manifest: {
         name: "ESP32-C5 Spectrum",
         short_name: "Spectrum",

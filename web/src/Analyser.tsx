@@ -303,7 +303,7 @@ export function Analyser({ onOpenFirmware }: { onOpenFirmware: () => void }) {
                     title="Its own window and icon, and it works offline">Install app</button>}
                 </div>
                 <div className="hello">
-                  <img src="./james.png" alt="JJ (James Julier)" width="48" height="48" />
+                  <img src="./jj-james-julier.png" alt="JJ (James Julier)" width="48" height="48" />
                   <p>Hi, I&apos;m JJ, and I made this.
                     {canInstall ? " Install it and it's one click away next time." : ""} Have fun, and tell me what you find.</p>
                 </div>

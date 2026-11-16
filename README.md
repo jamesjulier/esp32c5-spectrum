@@ -13,6 +13,7 @@
   <a href="https://jamesjulier.github.io/esp32c5-spectrum/"><b>Open the app</b></a> ·
   <a href="https://jamesjulier.github.io/esp32c5-spectrum/#firmware"><b>Flash a board</b></a> ·
   <a href="#how-to-use-it">How to use it</a> ·
+  <a href="https://github.com/jamesjulier/esp32c5-spectrum-cardputer"><b>CardputerZero app</b></a> ·
   <a href="docs/technical.md">Technical notes</a>
 </p>
 
@@ -78,6 +79,13 @@ number to zoom in ([all the gestures](#touch-on-the-28-board)).
 
 Want it as a proper app? Click **Install** at the right-hand end of Chrome's address bar. You get
 an icon and its own window, and it works offline.
+
+### 4. Or plug it into an M5Stack CardputerZero
+
+Got an **M5Stack CardputerZero**? Install the native companion app from
+**[jamesjulier/esp32c5-spectrum-cardputer](https://github.com/jamesjulier/esp32c5-spectrum-cardputer)**
+(or use share code **`C5SP`** in the CardputerZero AppStore) and plug your ESP32-C5 board straight
+into the side USB port for a pocket analyser with a keyboard.
 
 ## What you're looking at
 
